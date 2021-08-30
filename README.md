@@ -10,17 +10,11 @@ npm i --save sqs-poller
 ## Usage
 
 ```javascript
-const {
-  SQSClient,
-} = require('@aws-sdk/client-sqs')
-
 const { Poller } = require('sqs-poller')
 
 const poller = new Poller({
-  sqsClient: new SQSClient({
   region: 'your aws region',
   endpoint: 'your aws endpoint',
-}),
   queueUrl: 'your aws endpoint + queue name',
 })
 
@@ -41,8 +35,10 @@ poller.on('error', console.error)
 ## new Poller ([options])
 
 - options `<object>`
-  - `sqsClient` `<sqsClient>` Instance of the sqsClient class provided by [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-sqs/classes/sqsclient.html). *Required*.
+  - `endpoint` `<string>` The AWS SQS endpoint. *Required*.
+  - `region` `<string>` The AWS region for the queue. *Required*.
   - `queueUrl` `<string>` The complete URL for the queue, consisting of your AWS SQS endpoint + queue name. *Required*.
+  -  `sqsClient` `<sqsClient>` Instance of the sqsClient class provided by [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-sqs/classes/sqsclient.html). *Optional*.
   - `messageAttributeNames` `<string | QueueAttributeName >` The names of the message attributes. *Optional*.
   - `maxNumberOfMessages` `<number>` The maximum number of messages to return. *Optional*. __Default__: `10`
   - `visibilityTimeout` `<number>` The duration (in seconds) that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. *Optional*. __Default__: `20`

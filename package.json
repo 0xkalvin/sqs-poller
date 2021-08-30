@@ -1,6 +1,6 @@
 {
   "name": "sqs-poller",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "SQS poller written on top of AWS SQS client V3.",
   "main": "index.js",
   "scripts": {
