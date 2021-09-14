@@ -26,7 +26,8 @@
   },
   "homepage": "https://github.com/0xkalvin/sqs-poller#readme",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.27.0"
+    "@aws-sdk/client-sqs": "^3.27.0",
+    "opentracing": "^0.14.5"
   },
   "devDependencies": {
     "snazzy": "^9.0.0",
