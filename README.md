@@ -10,15 +10,22 @@ npm i --save sqs-poller
 ## Usage
 
 ```javascript
+const { SQS } = require('@aws-sdk/client-sqs')
 const { Poller } = require('sqs-poller')
+
+const sqs = new SQS({
+  endpoint: sqsEndpoint,
+  region: sqsRegion,
+})
 
 const poller = new Poller({
   queueUrl: 'your aws endpoint + queue name',
+  sqsClient: sqs,
 })
 
 poller.start({
-  eachMessage: async ({ Body }) => {
-    await processMessageAsync(Body)
+  eachMessage: async (message) => {
+    await doSomethingWithMessage(message)
   }
 })
 
@@ -34,7 +41,7 @@ poller.on('error', console.error)
 
 - options `<object>`
   - `queueUrl` `<string>` The complete URL for the queue, consisting of your AWS SQS endpoint + queue name. *Required*.
-  -  `sqsClient` `<sqsClient>` Instance of the sqsClient class provided by [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-sqs/classes/sqsclient.html). *Optional*.
+  -  `sqsClient` `<sqsClient>` Instance of the sqsClient class provided by [AWS SDK v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-sqs/classes/sqsclient.html). *Required*.
   - `messageAttributeNames` `<string | QueueAttributeName >` The names of the message attributes. *Optional*.
   - `maxNumberOfMessages` `<number>` The maximum number of messages to return. *Optional*. __Default__: `10`
   - `visibilityTimeout` `<number>` The duration (in seconds) that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. *Optional*. __Default__: `20`
@@ -48,13 +55,14 @@ Create a new Poller class instance.
 ## poller.start (options)
 
 - `options` `<object>`
-  - `eachMessage` `<Function>` `(message) => Promise<any>`
+  - `eachMessage` `<Function>` `(message) => Promise<any>` The handler to process one message at a time. *Required*
+  - `beforePoll` `<Function>` `(message) => Promise<any>` The optional handler executed before performing a receiveMessage call. It can be used in scenarios where a business rule needs to be verified before polling new messages, such as rate limiting. *Optional*
 
 Start message processing by passing a handler for each message.
 
 ## poller.stop () : Promise<any>
 
-Stop message processing, waiting for in fligth messages to be finishied before resolving the promise. It can be used for proper graceful shutdown as following.
+Stop message processing, waiting for in-fligth messages to be finished before resolving the promise. It can be used for proper graceful shutdown as following.
 ```javascript
 process.once('SIGTERM', async (signal) => {
   await poller.stop()
