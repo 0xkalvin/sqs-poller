@@ -30,7 +30,7 @@ test('should call poll method and set fields properly after starting poller', (t
   t.end()
 })
 
-test('should throw if eachMessage is not passed and not set fields', (t) => {
+test('should throw if eachMessage and eachBatch are not passed', (t) => {
   const poller = new Poller({
     queueUrl: 'https://sqs.us-east-2.amazonaws.com/0000000/test-queue',
     sqsClient: {}
@@ -38,7 +38,7 @@ test('should throw if eachMessage is not passed and not set fields', (t) => {
 
   t.throws(function () {
     poller.start()
-  }, new Error('eachMessage is a required option'))
+  }, new Error('eachMessage or eachBatch is required'))
 
   const fields = Reflect.ownKeys(poller).slice(4)
 
@@ -80,6 +80,26 @@ test('should throw if beforePoll is not a function', (t) => {
       beforePoll: {}
     })
   }, new Error('beforePoll must be a function'))
+
+  const fields = Reflect.ownKeys(poller).slice(4)
+
+  t.equal(poller[fields[8]], false)
+  t.equal(poller[fields[9]], null)
+
+  t.end()
+})
+
+test('should throw if eachBatch is not a function', (t) => {
+  const poller = new Poller({
+    queueUrl: 'https://sqs.us-east-2.amazonaws.com/0000000/test-queue',
+    sqsClient: {}
+  })
+
+  t.throws(function () {
+    poller.start({
+      eachBatch: {}
+    })
+  }, new Error('eachBatch must be a function'))
 
   const fields = Reflect.ownKeys(poller).slice(4)
 

@@ -14,18 +14,22 @@ const { SQS } = require('@aws-sdk/client-sqs')
 const { Poller } = require('sqs-poller')
 
 const sqs = new SQS({
-  endpoint: sqsEndpoint,
-  region: sqsRegion,
+  endpoint: 'your sqs endpoint',
+  region: 'your sqs region',
 })
 
 const poller = new Poller({
-  queueUrl: 'your aws endpoint + queue name',
+  queueUrl: 'your sqs endpoint + queue name',
   sqsClient: sqs,
 })
 
 poller.start({
   eachMessage: async (message) => {
     await doSomethingWithMessage(message)
+  },
+  // or
+  eachBatch: async function (messages) {
+    await doSomethingWithBatch(messages)
   }
 })
 
@@ -55,7 +59,8 @@ Create a new Poller class instance.
 ## poller.start (options)
 
 - `options` `<object>`
-  - `eachMessage` `<Function>` `(message) => Promise<any>` The handler to process one message at a time. *Required*
+  - `eachMessage` `<Function>` `(message) => Promise<any>` The handler to process one message at a time. Either `eachMessage` or `eachBatch` must be passed. If both are available, the `eachMessage` handler will be used. *Conditionally Required*
+  - `eachBatch` `<Function>` `(message) => Promise<any>` The handler to process a message batch (up to ten messages) at a time. It is required if `eachMessage` is not passed. *Conditionally Required*
   - `beforePoll` `<Function>` `(message) => Promise<any>` The optional handler executed before performing a receiveMessage call. It can be used in scenarios where a business rule needs to be verified before polling new messages, such as rate limiting. *Optional*
 
 Start message processing by passing a handler for each message.

@@ -3,7 +3,12 @@ const { once } = require('events')
 const { test } = require('tap')
 
 const { Poller } = require('../../../index')
-const { kEachMessage, kIsRunning, kPoll } = require('../../../lib/symbols')
+const {
+  kEachBatch,
+  kEachMessage,
+  kIsRunning,
+  kPoll
+} = require('../../../lib/symbols')
 
 test('should invoke receiveMessage 1 time, whereas eachMessage & deleteMessage 4 times', async (t) => {
   const sqsClient = {
@@ -43,6 +48,50 @@ test('should invoke receiveMessage 1 time, whereas eachMessage & deleteMessage 4
   t.equal(sqsClient.receiveMessage.callCount, 1)
   t.equal(eachMessageMock.callCount, 4)
   t.equal(sqsClient.deleteMessage.callCount, 4)
+
+  clock.restore()
+
+  t.end()
+})
+
+test('should invoke receiveMessage, eachBatch and deleteMessage one time', async (t) => {
+  const sqsClient = {
+    deleteMessageBatch: sinon.stub().resolves(),
+    receiveMessage: sinon.stub().resolves({
+      Messages: [
+        {
+          Id: 1
+        },
+        {
+          Id: 2
+        },
+        {
+          Id: 3
+        },
+        {
+          Id: 4
+        }
+      ]
+    })
+  }
+
+  const poller = new Poller({
+    queueUrl: 'https://sqs.us-east-2.amazonaws.com/0000000/test-queue',
+    pollingTimeout: 1,
+    sqsClient: sqsClient
+  })
+
+  const eachBatchMock = sinon.stub().resolves()
+  poller[kEachBatch] = eachBatchMock
+  poller[kIsRunning] = true
+
+  const clock = sinon.useFakeTimers()
+
+  await poller[kPoll]()
+
+  t.equal(sqsClient.receiveMessage.callCount, 1)
+  t.equal(eachBatchMock.callCount, 1)
+  t.equal(sqsClient.deleteMessageBatch.callCount, 1)
 
   clock.restore()
 
