@@ -39,6 +39,14 @@ async function run() {
     eachMessage: async function (message) {
       console.log(`Message ${counter} -> id ${message.MessageId}`);
       counter++
+    },
+
+    // or
+    eachBatch: async function (messages) {
+      messages.forEach((message) => {
+        console.log(`Message ${counter} -> id ${message.MessageId}`);
+        counter++
+      })
     }
   })
 
