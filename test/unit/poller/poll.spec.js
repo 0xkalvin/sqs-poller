@@ -1,5 +1,7 @@
-const sinon = require('sinon')
+const { AsyncLocalStorage } = require('async_hooks')
 const { once } = require('events')
+
+const sinon = require('sinon')
 const { test } = require('tap')
 
 const { Poller } = require('../../../index')
@@ -131,4 +133,49 @@ test('should emit error if receiveMessage rejects', async (t) => {
   clock.restore()
 
   t.end()
+})
+
+test('should not break async context after poll call', (t) => {
+  const sqsClient = {
+    deleteMessage: sinon.stub().resolves(),
+    receiveMessage: sinon.stub().resolves({
+      Messages: [
+        {
+          Id: 1
+        },
+        {
+          Id: 2
+        }
+      ]
+    })
+  }
+
+  const storage = new AsyncLocalStorage()
+
+  const poller = new Poller({
+    queueUrl: 'https://sqs.us-east-2.amazonaws.com/0000000/test-queue',
+    pollingTimeout: 1,
+    sqsClient: sqsClient
+  })
+
+  const eachMessageMock = sinon.stub().resolves()
+  poller[kEachMessage] = eachMessageMock
+  poller[kIsRunning] = true
+
+  const clock = sinon.useFakeTimers()
+
+  storage.run({}, () => {
+    const store = storage.getStore()
+
+    poller[kPoll]().then(() => {
+      t.equal(storage.getStore(), store)
+      t.equal(sqsClient.receiveMessage.callCount, 1)
+      t.equal(eachMessageMock.callCount, 2)
+      t.equal(sqsClient.deleteMessage.callCount, 2)
+
+      clock.restore()
+
+      t.end()
+    })
+  })
 })
