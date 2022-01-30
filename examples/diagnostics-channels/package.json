@@ -1,0 +1,16 @@
+{
+  "name": "diagnostics-channels",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.48.0",
+    "sqs-poller": "^1.4.0"
+  }
+}

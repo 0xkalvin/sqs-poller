@@ -77,3 +77,56 @@ process.once('SIGTERM', async (signal) => {
   process.exit(0)
 })
 ```
+
+## Diagnostics Channels
+
+The `sqs-poller` supports diagnostics channels (feature currently available only on Node.js v16+). It is the preferred way to instrument this package. The data is only published to these channels in case there are subscribers listening to them. The available channels are the following:
+- `sqspoller:poller:eachMessage:start`
+  - Before a SQS message gets processed by the `eachMessage` handler, the SQS message gets published to this channel.
+
+  ```js
+  const diagnosticsChannel = require('diagnostics_channel')
+
+  diagnosticsChannel.channel('sqspoller:poller:eachMessage:start').subscribe(({ message }) => {
+  console.log('body', message.Body)
+  console.log('ReceiptHandle', message.ReceiptHandle)
+  })
+  ```
+
+- `sqspoller:poller:eachMessage:end`
+   - When the `eachMessage` handler has been either resolved or rejected, the SQS message gets published to this channel.
+
+  ```js
+  diagnosticsChannel.channel('sqspoller:poller:eachMessage:end').subscribe(({ message }) => {
+  console.log('body', message.Body)
+  console.log('ReceiptHandle', message.ReceiptHandle)
+  })
+  ```
+- `sqspoller:poller:eachMessage:error`
+     - When the `eachMessage` handler rejects, the SQS message and the error get published to this channel.
+
+  ```js
+  diagnosticsChannel.channel('sqspoller:poller:eachMessage:error').subscribe(({ message, error }) => {
+  console.log('body', message.Body)
+  console.log('ReceiptHandle', message.ReceiptHandle)
+  console.log('error', error)
+  })
+  ```
+- `sqspoller:poller:eachBatch:start`
+  - Before a SQS message batch gets processed by the `eachBatch` handler, the batch (`messages`) gets published to this channel.
+- `sqspoller:poller:eachBatch:end`
+  - When the `eachBatch` resolves or rejects, the message batch (`messages`)  gets published to this channel.
+- `sqspoller:poller:eachBatch:error`
+  - When the `eachBatch` rejects, the message batch (`messages`) and `error` get published to this channel.
+- `sqspoller:poller:deleteMessage:start`
+    - Before deleting a message from SQS, the `message` gets published to this channel.
+- `sqspoller:poller:deleteMessage:end`
+    - When the deleteMessage call resolves or rejects, the `message` gets published to this channel.
+- `sqspoller:poller:deleteMessage:error`
+    - When the deleteMessage call rejects, the `message` and `error` get published to this channel.
+- `sqspoller:poller:deleteBatch:start`
+    - Before deleting a message batch from SQS, the batch (`messages`) gets published to this channel.
+- `sqspoller:poller:deleteBatch:end`
+    - When the deleteBatch call resolves or rejects, the batch (`messages`) gets published to this channel.
+- `sqspoller:poller:deleteBatch:error`
+    - When the deleteBatch call rejects, the batch (`messages`) and `error` get published to this channel.
