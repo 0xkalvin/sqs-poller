@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.48.0",
-    "sqs-poller": "^1.4.0"
+    "sqs-poller": "^1.5.0"
   }
 }
